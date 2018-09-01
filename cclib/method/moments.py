@@ -32,18 +32,22 @@ class Moments(Method):
         """Returns a representation of the object."""
         return 'Moments("%s")' % (self.data)
 
+    def _ensure_charges(self, charges):
+        """Ensure that the sum of charges is equal to the net charge
+        by means of splitting the remainder equally if needed.
+        """
+        remainder = self.data.charge - sum(charges)
+        if remainder != 0:
+            return charges + remainder / len(charges)
+        else:
+            return charges
+    
     def _calculate_dipole(self, charges, coords, origin):
         """Calculate the dipole moment from the given atomic charges
         and their coordinates with respect to the origin.
         """
-        coords_au = convertor(coords, 'Angstrom', 'bohr')
-        
-        if self.data.charge == 0:
-            dipole = numpy.dot(charges, coords_au)
-        else:
-            origin_au = convertor(origin, 'Angstrom', 'bohr')
-            dipole = numpy.dot(charges, coords_au - origin_au)
-            
+        transl_coords_au = convertor(coords - origin, 'Angstrom', 'bohr')
+        dipole = numpy.dot(charges, transl_coords_au)
         return convertor(dipole, 'ebohr', 'Debye')
 
     def _calculate_quadrupole(self, charges, coords, origin):
@@ -98,8 +102,10 @@ class Moments(Method):
             Quarterly Reviews, Chemical Society, 13(3), 183.
         """
         coords = self.data.atomcoords[-1]
+        
         try:
             charges = self.data.atomcharges[population]
+            charges = self._ensure_charges(charges)
         except KeyError:
             raise ValueError
 
