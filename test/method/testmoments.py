@@ -94,7 +94,7 @@ class TruncatedValuesTestHelper:
             # (0,0,0).
             a = Moments(mock).calculate()
         
-            msg = "Origin should located at zero point"
+            msg = "Origin should be located at zero point"
             assert_almost_equal(a[0], [0, 0, 0], 6, msg)
 
             # Place the origin somewhere inside the system of charges
@@ -109,6 +109,10 @@ class TruncatedValuesTestHelper:
             msg = "\mu(q=0) is invariant to the large origin displacement"
             c = Moments(mock).calculate(origin=(1e7,2e7,3e7))
             assert_almost_equal(a[1], c[1], 6, msg)
+
+            msg = "\mu(q=0) is invariant to the very large origin displacement"
+            d = Moments(mock).calculate(origin=(3e9,3e9,3e9))
+            assert_almost_equal(a[1], d[1], 6, msg)
             
         return wrap
 
@@ -120,9 +124,10 @@ class TruncatedValuesTest(unittest.TestCase):
 if __name__ == "__main__":
     unittest.TextTestRunner(verbosity=2).run(unittest.makeSuite(MomentsTest))
 
-    # TODO: After closing issue #455, implement this as parameterized
-    # tests with the help of `pytest.mark.parametrize` decorator.
-    for i in range(10):
+    # TODO: After closing issue #455, this can be implemented as
+    # parameterized tests with the help of `pytest.mark.parametrize`
+    # decorator.
+    for i in range(100):
         s = numpy.random.RandomState(i)
         atoms_num = s.randint(2, 20)
         mock = TruncatedValuesTestHelper.generate_data(s, atoms_num, 6)
