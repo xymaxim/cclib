@@ -7,6 +7,7 @@
 
 """Calculation of electric multipole moments based on data parsed by cclib."""
 
+import logging
 from collections import Iterable
 
 import numpy
@@ -25,7 +26,7 @@ class Moments(Method):
         self.required_attrs = ('atomcoords', 'atomcharges')
         self.results = {}
 
-        super(Moments, self).__init__(data)
+        super(Moments, self).__init__(data, logname='Moments')
 
     def __str__(self):
         """Returns a string representation of the object."""
@@ -109,8 +110,8 @@ class Moments(Method):
         try:
             charges = self.data.atomcharges[population]
         except KeyError as e:
-            msg = ("charges coming from requested population analysis"
-                   "scheme are not parsed")
+            msg = ('charges coming from requested population analysis'
+                   'scheme are not parsed')
             raise ValueError(msg, e)
 
         if isinstance(origin, Iterable) and not isinstance(origin, str):
@@ -131,6 +132,9 @@ class Moments(Method):
         else:
             raise ValueError("{} is invalid value for 'origin'".format(origin))
 
+        if sum(charges) != self.data.charge:
+            self.logger.warning('Sum of partial atomic charges not an integer')
+            
         dipole = self._calculate_dipole(charges, coords, origin_pos)
         quadrupole = self._calculate_quadrupole(charges, coords, origin_pos)
 

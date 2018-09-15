@@ -20,7 +20,8 @@ class TestIdealizedInputs(unittest.TestCase):
     linear_dipole_attrs = {
         'atomcoords': np.array([[[-1, 0, 0], [ 1,  0, 0]]]),
         'atomcharges': {'mulliken': [-1, 1]},
-        'atomnos': [1, 1]
+        'atomnos': [1, 1],
+        'charge': 0
     }
     
     @mock.patch('cclib.parser.ccData', spec=True)
@@ -38,6 +39,7 @@ class TestIdealizedInputs(unittest.TestCase):
             [1, 0, 0]]])
         mock.atomcharges = {'mulliken': [1/2, -1, 1/2]}
         mock.atomnos = np.ones(mock.atomcoords.shape[1])
+        mock.charge = 0
 
         x = Moments(mock).calculate()
         self.assertEqual(np.count_nonzero(x[1]), 0)
@@ -53,6 +55,7 @@ class TestIdealizedInputs(unittest.TestCase):
             [2, 0, 0]]])
         mock.atomcharges = {'mulliken': [-1/8, 1/2, -3/4, 1/2, -1/8]}
         mock.atomnos = np.ones(mock.atomcoords.shape[1])
+        mock.charge = 0
 
         x = Moments(mock).calculate()
         self.assertEqual(np.count_nonzero(x[1]), 0)
@@ -69,7 +72,8 @@ class TestIdealizedInputs(unittest.TestCase):
     @mock.patch('cclib.parser.ccData', spec=True)
     def test_variant_to_origin_dislacement(self, mock):
         attrs = dict(self.linear_dipole_attrs, **{
-            'atomcharges': {'mulliken': [-1, 2]}
+            'atomcharges': {'mulliken': [-1, 2]},
+            'charge': 1
         })
         mock.configure_mock(**attrs)
 
@@ -102,7 +106,7 @@ class TestIdealizedInputs(unittest.TestCase):
     @mock.patch('cclib.parser.ccData', spec=True)
     def test_user_provided_masses(self, mock):
         mock.configure_mock(**self.linear_dipole_attrs)
-
+        
         x = Moments(mock).calculate(masses=[1, 3], origin='mass')
         assert_almost_equal(x[0], [0.5, 0, 0])
 
